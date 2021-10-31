@@ -170,7 +170,7 @@ class RecipeCard extends HTMLElement {
       ratElement.appendChild(span1);
 
       let ratImg = document.createElement('img');
-      ratImg.setAttribute('src',`/assets/images/icons/${rating}-star.svg`);
+      ratImg.setAttribute('src',`assets/images/icons/${rating}-star.svg`);
       ratImg.setAttribute('alt',`${rating} stars`);
       ratElement.appendChild(ratImg);
 
