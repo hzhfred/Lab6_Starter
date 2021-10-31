@@ -43,6 +43,28 @@ async function fetchRecipes() {
     // in the recipes folder and fetch them from there. You'll need to add their paths to the recipes array.
 
     // Part 1 Expose - TODO
+    Promise.all(recipes.map(async (url)=>{
+      return fetch(url)
+        .then((res) => res.json())
+        .then((data)=>{
+          recipeData[url] = data;
+          // if (!('image' in data)){
+          //   console.log(data['@graph'].filter(ele => '@context' in ele)[0])
+          // } else {
+          //   console.log(data)
+          // }
+        })
+        .catch((err)=>{
+          reject(false);
+        })
+    }))
+    .then(()=>{
+      if (Object.keys(recipeData).length != recipes.length){
+        reject(false);
+      }
+      resolve(true);
+    })
+
   });
 }
 
@@ -51,9 +73,17 @@ function createRecipeCards() {
   // From within this function you can access the recipe data from the JSON 
   // files with the recipeData Object above. Make sure you only display the 
   // three recipes we give you, you'll use the bindShowMore() function to
-  // show any others you've added when the user clicks on the "Show more" button.
-
+  // show any others you've added when the user clicks on the "Show more" button.  
   // Part 1 Expose - TODO
+  recipes.forEach((url) => {
+    let main = document.querySelector('main');
+    let recipeCard = document.createElement('recipe-card');
+    console.log(recipeData[url])
+    recipeCard.data = recipeData[url];
+    main.appendChild(recipeCard);
+  })
+  
+
 }
 
 function bindShowMore() {

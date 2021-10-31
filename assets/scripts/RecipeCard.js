@@ -3,6 +3,9 @@ class RecipeCard extends HTMLElement {
     // Part 1 Expose - TODO
 
     // You'll want to attach the shadow DOM here
+    super();
+    this.shadow = this.attachShadow({mode: 'open'});
+
   }
 
   set data(data) {
@@ -86,7 +89,131 @@ class RecipeCard extends HTMLElement {
     styleElem.innerHTML = styles;
 
     // Here's the root element that you'll want to attach all of your other elements to
+
+    //<!-- With a Rating -->
+    // <article>
+    //   <img src="https://link-to-article.com/recipe-thumbnail.jpg" alt="Recipe Title">
+    //   <p class="title">
+    //     <a href="https://link-to-article.com">Title</a>
+    //   </p>
+    //   <p class="organization">The Chef's Organization</p>
+    //   <div class="rating">
+    //     <!-- Average Review out of 5 -->
+    //     <span>5</span>
+    //     <!-- Corresponding image to avg review score -->
+    //     <img src="/assets/images/icons/5-star.svg" alt="5 stars">
+    //     <!-- Total number of reviews -->
+    //     <span>(500)</span>
+    //   </div>
+    //   <time>50 min</time>
+    //   <p class="ingredients">
+    //     Comma, Separated, List, of, Ingredients
+    //   </p>
+    // </article>
     const card = document.createElement('article');
+    let cleanedData = data;
+    let imgUrl;
+    if (!('image' in data)){
+      cleanedData = data['@graph'].filter(ele => '@context' in ele)[0];
+      imgUrl = data['@graph'].filter(ele => ele['@type'] == "ImageObject")[0]['url'];
+    } else {
+      imgUrl = data['image']['url']
+    }
+    //  <img src="https://link-to-article.com/recipe-thumbnail.jpg" alt="Recipe Title">
+
+    
+    
+
+    let imgElement = document.createElement('img');
+    imgElement.setAttribute('src',imgUrl);
+    imgElement.setAttribute('alt',cleanedData['name']);
+    card.appendChild(imgElement);
+
+    //   <p class="title">
+    //     <a href="https://link-to-article.com">Title</a>
+    //   </p>
+    let titleElement = document.createElement('p');
+    titleElement.setAttribute('class','title');
+
+    let titleElementa = document.createElement('a');
+    //titleElementa.setAttribute('href',cleanedData['mainEntityOfPage'])
+    titleElementa.setAttribute('href',getUrl(data))
+    titleElementa.innerText = cleanedData['name']
+    titleElement.appendChild(titleElementa)
+    card.appendChild(titleElement)
+    //   <p class="organization">The Chef's Organization</p>
+    let org = getOrganization(data);
+    // if (!('publisher' in data)){
+    //   org = data['@graph'].filter(ele => '@Organization' in ele)[0]['name'];
+    // } else {
+    //   org = data['publisher']['name'];
+    // }
+    let orgElement = document.createElement('p');
+    orgElement.setAttribute('class','organization');
+    orgElement.innerText = org;
+    card.appendChild(orgElement);
+    //   <div class="rating">
+    //     <span>5</span>
+    //     <img src="/assets/images/icons/5-star.svg" alt="5 stars">
+    //     <span>(500)</span>
+    //   </div>
+
+    //  <div class="rating">
+    //   <span>No Reviews</span>
+    // </div>
+    let ratElement = document.createElement('div');
+    ratElement.setAttribute('class','rating')
+    if ('aggregateRating' in cleanedData){
+      let span1 = document.createElement('span');
+      let rating = Math.round(parseFloat(cleanedData['aggregateRating']['ratingValue']))
+      span1.innerText = rating
+      ratElement.appendChild(span1);
+
+      let ratImg = document.createElement('img');
+      ratImg.setAttribute('src',`/assets/images/icons/${rating}-star.svg`);
+      ratImg.setAttribute('alt',`${rating} stars`);
+      ratElement.appendChild(ratImg);
+
+      let span2 = document.createElement('span');
+      let ratingCount = cleanedData['aggregateRating']['ratingCount']
+      span2.innerText = `(${ratingCount})`
+      ratElement.appendChild(span2);
+
+    } else {
+      let span1 = document.createElement('span');
+      span1.innerText = 'No Reviews'
+      ratElement.appendChild(span1);
+    }
+    card.appendChild(ratElement)
+
+
+
+    //   <time>50 min</time>
+    let time = document.createElement('time')
+    let timestr = convertTime(cleanedData['totalTime'])
+    time.innerText = timestr
+    // if (timestr.substring(c.length - 1,c.length) == 'M'){
+    //   time.innerText = `${timestr.substring(2,c.length - 1)} min`
+    // } else {
+    //   time.innerText = `${timestr.substring(2,c.length - 1)} hr`
+    // }
+    card.appendChild(time)
+    
+
+
+    //   <p class="ingredients">
+    //     Comma, Separated, List, of, Ingredients
+    //   </p>
+    let ingElement = document.createElement('p');
+    ingElement.setAttribute('class','ingredients')
+    
+
+
+    ingElement.innerText = createIngredientList(cleanedData['recipeIngredient'])
+    card.appendChild(ingElement)
+    this.shadow.appendChild(styleElem)
+    this.shadow.appendChild(card);
+
 
     // Some functions that will be helpful here:
     //    document.createElement()
